@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/img/favicon.ico">
+    <title>Preclinic - Medical & Hospital - Bootstrap 4 Admin Template</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+    <!--[if lt IE 9]>
+		<script src="/assets/js/html5shiv.min.js"></script>
+		<script src="/assets/js/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+
+  
+    <div class="main-wrapper">
+        <%- include('./view-partials/header') -%>
+        <%- include('./view-partials/sidebar') %>
+
+    </div>
+
+    <div class="page-wrapper">
+        <div class="content">
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <h4 class="page-title">Delete Request</h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <% for (var i = 0; i < list.length; i++){ %>
+                                    <label>Room No</label>
+                                    <input class="form-control" type="text" name="room_no" value="<%= list[i].room_no %>">
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Resource</label>
+                                    <select class="" name="resource_id">
+                                        
+                                        <option value="1">Table</option>
+                                        <option value="2">Chair</option>
+                                        <option value="3">Fan</option>
+                                        <option value="4">Tube Light</option>
+                                        <option value="5">Bed</option>
+                                        <option value="6">Cupboard</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Student Roll Number</label>
+                                    <input type="text" name="student_id" id="" value="<%= list[i].student_id %>">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Request Date</label>
+                                    <div class="cal-icon">
+                                        <input type="text" name="request_date" value="<%= list[i].request_date %>">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Quantity</label>
+                                    <div class="">
+                                        <input type="text" class="form-control" id="" name="quantity" value="<%= list[i].quantity %>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <% } %>
+                        <div class="m-t-20 text-center">
+                            <button class="btn btn-primary submit-btn">Delete Appointment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+        

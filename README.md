@@ -1,2 +1,4 @@
-# hostel_inv_management
-DBMS Project
+# DBMS Semester Project
+
+## Hostel Inventory Management System
+
