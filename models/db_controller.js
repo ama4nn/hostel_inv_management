@@ -235,11 +235,12 @@ module.exports.add_appointment = function (
   console.log("quantity:", quantity);
   console.log("status:", status);
   if (
-    room_no == null ||
+    room_no == "" ||
     resource_id == null ||
-    student_id == null ||
-    request_date == null ||
-    quantity == null ||
+    student_id == "" ||
+    student_id.length != 8 ||
+    request_date == "0000-00-00" ||
+    quantity == 0 ||
     status == null
   ) {
     console.error("One or more parameters are undefined or null");
@@ -252,6 +253,7 @@ module.exports.add_appointment = function (
   `;
 
   con.query(query, [room_no, resource_id, student_id, quantity, status, request_date], callback);
+
 };
 
 
@@ -259,6 +261,40 @@ module.exports.getallappointment = function (callback) {
   var query = "select * from resourcerequests";
   con.query(query, callback);
 };
+
+module.exports.editResources = function (resourceId, requestId, callback) {
+  const query = `
+      UPDATE Resource r
+      JOIN ResourceRequests rr ON r.resource_id = rr.resource_id
+      SET r.quantity = r.quantity - rr.quantity
+      WHERE r.resource_id = ? AND rr.request_id = ?
+  `;
+
+  console.log("Executing query:", query);
+  con.query(query, [resourceId, requestId], function (err, result) {
+      if (err) {
+          console.error("Error updating resource quantity:", err);
+          return callback(err);
+      }
+      console.log("Resource quantity updated successfully");
+      callback(null, result);
+  });
+};
+
+
+module.exports.getResourceIdAndQuantity = function (requestId, callback) {
+  const query = "SELECT resource_id, quantity FROM ResourceRequests WHERE request_id = ?";
+  con.query(query, [requestId], function (err, results) {
+      if (err) return callback(err);
+      callback(null, results[0]); // Return first result if found
+  });
+};
+
+module.exports.getPendingRequests = function(callback) {
+  var query = "SELECT * FROM resourcerequests WHERE status = 'Pending'";
+  con.query(query, callback);
+}
+
 
 module.exports.searchDoc = function (key, callback) {
   var query = 'SELECT  *from doctor where first_name like "%' + key + '%"';
@@ -317,10 +353,11 @@ module.exports.editappointment = function (
 module.exports.approveRequest = function (id, callback) {
   var query = "update resourcerequests set status = 'Approved' where request_id = " + id;
   con.query(query, callback);
+
 };
 
 module.exports.rejectRequest = function (id, callback) {
-  var query = "update resourcerequests set status = 'Reject' where request_id = " + id;
+  var query = "update resourcerequests set status = 'Rejected' where request_id = " + id;
   con.query(query, callback);
 };
 

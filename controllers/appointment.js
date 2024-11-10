@@ -58,9 +58,34 @@ router.get('/delete_appointment/:id',function(req,res){
 });
 
 router.get('/approve_request/:id', function(req, res) {
-    var id = req.params.id;
-    db.approveRequest(id, function(err, result) {
-        res.redirect('/appointment');
+    const requestId = req.params.id;
+
+    db.approveRequest(requestId, function(err, result) {
+        if (err) {
+            console.error("Error approving request:", err);
+            return res.status(500).send("Error approving request");
+        }
+        console.log("Request approved with ID:", requestId);
+
+        // Retrieve resource_id and quantity directly from ResourceRequests
+        db.getResourceIdAndQuantity(requestId, function(err, data) {
+            if (err || !data) {
+                console.error("Error retrieving resource details:", err);
+                return res.status(500).send("Error retrieving resource details");
+            }
+
+            const { resource_id, quantity } = data;
+
+            // Update the Resource table with the new quantity
+            db.editResources(resource_id, requestId, function(err, result) {
+                if (err) {
+                    console.error("Error updating resource quantity:", err);
+                    return res.status(500).send("Error updating resource quantity");
+                }
+                console.log("Resource quantity updated:", result);
+                res.redirect('/appointment');
+            });
+        });
     });
 });
 

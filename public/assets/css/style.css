@@ -63,8 +63,8 @@ html {
 body {
 	font-family: 'Rubik', sans-serif;
 	font-size: 0.875rem;
-	color: #666;
-	background-color: #fafafa;
+	color: #e2e1e1;
+	background-color: #000;
 	overflow-x: hidden;
 	height: 100%;
 }
@@ -78,26 +78,32 @@ h6 {
 }
 h1,
 .h1 {
+	color: #009ce7;
 	font-size: 2.25rem;
 }
 h2,
 .h2 {
+	color: #009ce7;
 	font-size: 1.875rem;
 }
 h3,
 .h3 {
+	color: #009ce7;
 	font-size: 1.5rem;
 }
 h4,
 .h4 {
 	font-size: 1.125rem;
+	color: #009ce7;
 }
 h5,
 .h5 {
+	color: #009ce7;
 	font-size: 0.875rem;
 }
 h6,
 .h6 {
+	color: #009ce7;
 	font-size: 0.75rem;
 }
 a:hover,
@@ -433,7 +439,7 @@ table.table td h2 span {
 }
 .btn-primary {
 	border-color: transparent;
-	background-color: #009efb;
+	background-color: #696969;
 }
 .btn-primary:hover,
 .btn-primary:focus,
@@ -702,7 +708,7 @@ textarea.form-control {
 -----------------------*/
 
 .header {
-	background-color: #009efb;
+	background-color: grey;
 	left: 0;
 	position: fixed;
 	right: 0;
@@ -3671,7 +3677,7 @@ table.table-inbox tbody tr.checked {
 	background-color: transparent;
 	border-color: #eaeaea;
 	border-left: none;
-	color: #009efb;
+	color: #646464;
 	height: 40px;
 	border-radius: 0;
 }

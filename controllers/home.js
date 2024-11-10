@@ -18,16 +18,11 @@ router.get('*', function(req, res, next){
 
 
 router.get('/',function(req,res){
-    db.getAllDoc(function(err,result){
-        db.getallappointment(function(err,result1){
-        var total_doc = result.length ;
-        var appointment = result1.length;
-         
-        res.render('home.ejs',{doc : total_doc , doclist : result, appointment : appointment, applist : result1});
-        });
-        //console.log(result.length);
-        
-    });
+
+    db.getPendingRequests(function (err, result2) {
+        var pendingRequests = result2.length;
+        res.render('home.ejs', {pending : pendingRequests});
+    })
    
 });
 
