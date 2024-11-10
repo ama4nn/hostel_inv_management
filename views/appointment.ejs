@@ -14,7 +14,7 @@
                         <h4 class="page-title">Resource Requests</h4>
                     </div>
                     <div class="col-sm-8 col-9 text-right m-b-20">
-                        <a href="/appointment/add_appointment" class="btn btn btn-primary btn-rounded float-right"><i class="fa fa-plus"></i> Add Appointment</a>
+                        <a href="/appointment/addRequest" class="btn btn btn-primary btn-rounded float-right"><i class="fa fa-plus"></i> Add Request</a>
                     </div>
                 </div>
 				<div class="row">
@@ -52,9 +52,9 @@
 											<div class="dropdown dropdown-action">
 												<a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
 												<div class="dropdown-menu dropdown-menu-right">
-													<a class="dropdown-item" href="/appointment/delete_appointment/<%= list[i].request_id %>"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-													<a class="dropdown-item" href="/appointment/approve_request/<%= list[i].request_id %>"><i class=""></i>✔️ Approve</a>
-													<a class="dropdown-item" href="/appointment/reject_request/<%= list[i].request_id %>"><i class=""></i>✖️ Reject</a>
+													<a class="dropdown-item" href="/appointment/deleteRequest/<%= list[i].request_id %>"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
+													<a class="dropdown-item" href="/appointment/approveRequest/<%= list[i].request_id %>"><i class=""></i>✔️ Approve</a>
+													<a class="dropdown-item" href="/appointment/rejectRequest/<%= list[i].request_id %>"><i class=""></i>✖️ Reject</a>
 												</div>
 											</div>
                                         </td>
@@ -67,9 +67,9 @@
                 </div>
             </div>
             
-			<div id="delete_appointment" class="modal fade delete-modal" role="dialog">
+			<div id="deleteRequest" class="modal fade delete-modal" role="dialog">
                 <% for (var i = 0; i < list.length; i++){ %>
-                    <form action="/appointment/delete_appointment/<%=list[i].id%>" method="POST">
+                    <form action="/appointment/deleteRequest/<%=list[i].id%>" method="POST">
                         <% } %>
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">

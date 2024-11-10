@@ -12,19 +12,19 @@ router.get('*', function(req, res, next){
 });
 
 router.get('/',function(req,res){
-    db.getallappointment(function(err,result){
+    db.getAllRequests(function(err,result){
         console.log(result);
         res.render('appointment.ejs',{list :result});
     })
     
 });
 
-router.get('/add_appointment',function(req,res){
-    res.render('add_appointment.ejs');
+router.get('/addRequest',function(req,res){
+    res.render('addRequest.ejs');
 });
 
-router.post('/add_appointment',function(req,res){
-    db.add_appointment(req.body.room_no,req.body.resource_id,req.body.student_id,req.body.request_date,req.body.quantity,function(err,result){
+router.post('/addRequest',function(req,res){
+    db.addRequest(req.body.room_no,req.body.resource_id,req.body.student_id,req.body.request_date,req.body.quantity,function(err,result){
         res.redirect('/appointment');
     });
 
@@ -33,7 +33,7 @@ router.post('/add_appointment',function(req,res){
 
 router.get('/edit_appointment/:id',function(req,res){
     var id = req.params.id;
-    db.getappointmentbyid(id,function(err,result){
+    db.getRequestById(id,function(err,result){
         console.log(result);
         res.render('edit_appointment.ejs',{list : result});
     });
@@ -48,16 +48,16 @@ router.post('/edit_appointment/:id',function(req,res){
 });
 
 
-router.get('/delete_appointment/:id',function(req,res){
+router.get('/deleteRequest/:id',function(req,res){
     var id = req.params.id;
-    db.getappointmentbyid(id,function(err,result){
+    db.getRequestById(id,function(err,result){
         console.log(result);
-        res.render('delete_appointment.ejs',{list:result});
+        res.render('deleteRequest.ejs',{list:result});
     })
     
 });
 
-router.get('/approve_request/:id', function(req, res) {
+router.get('/approveRequest/:id', function(req, res) {
     const requestId = req.params.id;
 
     db.approveRequest(requestId, function(err, result) {
@@ -89,16 +89,16 @@ router.get('/approve_request/:id', function(req, res) {
     });
 });
 
-router.get('/reject_request/:id', function(req, res) {
+router.get('/rejectRequest/:id', function(req, res) {
     var id = req.params.id;
     db.rejectRequest(id, function(err, result) {
         res.redirect('/appointment');
     });
 });
 
-router.post('/delete_appointment/:id',function(req,res){
+router.post('/deleteRequest/:id',function(req,res){
     var id =req.params.id;
-    db.deleteappointment(id,function(err,result){
+    db.deleteRequest(id,function(err,result){
         res.redirect('/appointment');
     });
 })
