@@ -14,7 +14,7 @@ var app = express();
 
 
 
-var bodyParser = require ('body-parser');
+var bodyParser = require ('body-parser')
 
 var  login = require ('./controllers/login');
 var  home = require ('./controllers/home');
