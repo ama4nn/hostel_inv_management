@@ -13,7 +13,6 @@ router.get('*', function(req, res, next){
 
 router.get('/',function(req,res){
     db.getAllRequests(function(err,result){
-        console.log(result);
         res.render('appointment.ejs',{list :result});
     })
     
@@ -57,37 +56,35 @@ router.get('/deleteRequest/:id',function(req,res){
     
 });
 
-router.get('/approveRequest/:id', function(req, res) {
+router.get('/approveRequest/:id', function (req, res) {
     const requestId = req.params.id;
 
-    db.approveRequest(requestId, function(err, result) {
+    db.validateAndApproveRequest(requestId, function (err, result) {
         if (err) {
-            console.error("Error approving request:", err);
-            return res.status(500).send("Error approving request");
-        }
-        console.log("Request approved with ID:", requestId);
+            console.error("Error approving request:", err.message);
 
-        // Retrieve resource_id and quantity directly from ResourceRequests
-        db.getResourceIdAndQuantity(requestId, function(err, data) {
-            if (err || !data) {
-                console.error("Error retrieving resource details:", err);
-                return res.status(500).send("Error retrieving resource details");
-            }
-
-            const { resource_id, quantity } = data;
-
-            // Update the Resource table with the new quantity
-            db.editResources(resource_id, requestId, function(err, result) {
-                if (err) {
-                    console.error("Error updating resource quantity:", err);
-                    return res.status(500).send("Error updating resource quantity");
+            // Fetch the appointments list to display on the UI
+            db.getAllRequests(function (appointmentsErr, appointments) {
+                if (appointmentsErr) {
+                    console.error("Error fetching appointments:", appointmentsErr);
+                    return res.status(500).send("Error fetching appointments");
                 }
-                console.log("Resource quantity updated:", result);
-                res.redirect('/appointment');
+
+                // Render the page with the error message
+                res.render('appointment', {
+                    error: err.message,
+                    list: appointments, // Pass the list of appointments
+                });
             });
-        });
+
+            return; // Ensure the function doesn't proceed further
+        }
+
+        console.log("Request approved successfully");
+        res.redirect('/appointment');
     });
 });
+
 
 router.get('/rejectRequest/:id', function(req, res) {
     var id = req.params.id;
@@ -97,18 +94,10 @@ router.get('/rejectRequest/:id', function(req, res) {
 });
 
 router.post('/deleteRequest/:id',function(req,res){
-    var id =req.params.id;
+    var id = req.params.id;
     db.deleteRequest(id,function(err,result){
         res.redirect('/appointment');
     });
 })
 
-
-
-
-
-
-
-
-
-module.exports =router;
+module.exports = router;

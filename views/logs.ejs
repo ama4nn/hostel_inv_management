@@ -11,11 +11,9 @@
             <div class="content">
                 <div class="row">
                     <div class="col-sm-4 col-3">
-                        <h4 class="page-title">Resource Requests</h4>
+                        <h4 class="page-title">Maintenance Log</h4>
                     </div>
-                    <div class="col-sm-8 col-9 text-right m-b-20">
-                        <a href="/appointment/addRequest" class="btn btn btn-primary btn-rounded float-right"><i class="fa fa-plus"></i> Add Request</a>
-                    </div>
+
                 </div>
 				<div class="row">
 					<div class="col-md-12">
@@ -23,41 +21,23 @@
 							<table class="table table-striped custom-table">
 								<thead>
 									<tr>
-										<th>Request ID</th>
-										<th>Room no</th>
-										<th>Resource ID</th>
+										<th>Log ID</th>
 										<th>Student ID</th>
+										<th>Request ID</th>
+										<th>Date Logged</th>
 										
-										<th>Quantity</th>
-										<th>Status</th>
-                                        <th>Request Date</th>
-										<th class="text-right">Action</th>
+										<th>Action</th>
 									</tr>
 								</thead>
 								<tbody>
                                     <% for (var i = 0; i < list.length; i++){ %>
 									<tr>
+										<td><%= list[i].log_id %></td>
+										<td><%= list[i].student_id %></td>
 										<td><%= list[i].request_id %></td>
-										
-										<td><%= list[i].room_no %></td>
-										<td><%= list[i].resource_id%></td>
-										<td><%= list[i].student_id%></td>
-										<td><%= list[i].quantity %></td>
-                   	                     <td><%= list[i].status %></td>
+										<td><%= list[i].date_completed.toString().slice(0, 15) %></td>
+                                        <td><%= list[i].action_type %></td>
 
-                                        <td><%= list[i].request_date.toString().slice(0, 15) %></td>
-                    
-										
-										<td class="text-right">
-											<div class="dropdown dropdown-action">
-												<a href="#" class="action-icon dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
-												<div class="dropdown-menu dropdown-menu-right">
-													<a class="dropdown-item" href="/appointment/deleteRequest/<%= list[i].request_id %>"><i class="fa fa-trash-o m-r-5"></i> Delete</a>
-													<a class="dropdown-item" href="/appointment/approveRequest/<%= list[i].request_id %>"><i class=""></i>✔️ Approve</a>
-													<a class="dropdown-item" href="/appointment/rejectRequest/<%= list[i].request_id %>"><i class=""></i>✖️ Reject</a>
-												</div>
-											</div>
-                                        </td>
                                         <% } %>
 									</tr>
 								</tbody>
@@ -83,13 +63,6 @@
 					</div>
                 </div>
             </form>
-			</div>
-			<div>
-				<% if (typeof error !== 'undefined') { %>
-					<div class="alert alert-danger" role="alert">
-						<strong>Error:</strong> <%= error %>
-					</div>
-				<% } %>
 			</div>
 		</div>
     </div>

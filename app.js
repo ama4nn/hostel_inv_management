@@ -3,13 +3,7 @@ var session = require ('express-session');
 var cookie = require ('cookie-parser');
 var path = require ('path');
 var ejs= require ('ejs');
-var multer = require('multer');
 var path = require ('path');
-var async = require ('async');
-var nodemailer = require('nodemailer'); /////////////
-var crypto = require ('crypto');
-var expressValidator = require ('express-validator');
-var  sweetalert = require('sweetalert2');
 var app = express();
 
 
@@ -19,9 +13,7 @@ var bodyParser = require ('body-parser')
 var  login = require ('./controllers/login');
 var  home = require ('./controllers/home');
 var  signup = require ('./controllers/signup');
-var add_doc = require('./controllers/add_doctor');
 var  doc_controller = require ('./controllers/doc_controller');
-var db = require ('./models/db_controller');
 var reset = require('./controllers/reset_controller');
 var set = require('./controllers/set_controller');
 var employee = require ('./controllers/employee.js');
@@ -31,11 +23,12 @@ var store = require ('./controllers/store');
 var landing = require ('./controllers/landing');
 var complain = require ('./controllers/complain');
 var appointment = require ('./controllers/appointment');
+var logs = require('./controllers/logs')
 
 var receipt = require ('./controllers/receipt');
 
 var app = express();
-
+var port = 3000;
 
 app.set('view engine', 'ejs');
 
@@ -46,9 +39,9 @@ app.use(cookie());
 //app.use(expressValidator());
 
 
-var server =app.listen(3000 , function(){
+var server = app.listen(port ,() => {
 
-    console.log('server started');
+    console.log("Server started on port `localhost:" + port + "`");
 });
 
 app.use('/login' ,login);
@@ -65,5 +58,6 @@ app.use ('/',landing);
 app.use ('/complain',complain);
 app.use ('/appointment',appointment);
 app.use('/receipt',receipt);
+app.use('/logs', logs);
 
 // app.use('/doctors/add_doctor',add_doc);
