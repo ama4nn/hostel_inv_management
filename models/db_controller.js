@@ -1,6 +1,6 @@
 var mysql = require("mysql");
 
-//module.exports =router;
+//module.exports = router;
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -103,7 +103,7 @@ module.exports.getAllLogs = (callback) => {
   con.query(query, callback);
 }
 
-module.exports.editResources = function (resourceId, requestId, callback) {
+module.exports.editResources = function (resource_id, requestId, callback) {
   const query = `
       UPDATE Resource r
       JOIN ResourceRequests rr ON r.resource_id = rr.resource_id
@@ -112,7 +112,7 @@ module.exports.editResources = function (resourceId, requestId, callback) {
   `;
 
   console.log("Executing query:", query);
-  con.query(query, [resourceId, requestId], function (err, result) {
+  con.query(query, [resource_id, requestId], function (err, result) {
       if (err) {
           console.error("Error updating resource quantity:", err);
           return callback(err);
@@ -123,7 +123,7 @@ module.exports.editResources = function (resourceId, requestId, callback) {
 };
 
 
-module.exports.getResourceIdAndQuantity = function (requestId, callback) {
+module.exports.getResource_idAndQuantity = function (requestId, callback) {
   const query = "SELECT resource_id, quantity FROM ResourceRequests WHERE request_id = ?";
   con.query(query, [requestId], function (err, results) {
       if (err) return callback(err);
@@ -131,9 +131,9 @@ module.exports.getResourceIdAndQuantity = function (requestId, callback) {
   });
 };
 
-module.exports.getResourceQuantity = function (resourceId, callback) {
+module.exports.getResourceQuantity = function (resource_id, callback) {
   const query = "SELECT quantity FROM Resource WHERE resource_id = ?";
-  con.query(query, [resourceId], function (err, results) {
+  con.query(query, [resource_id], function (err, results) {
       if (err) return callback(err);
       callback(null, results[0]?.quantity); // Return the quantity if it exists
   });
@@ -242,3 +242,93 @@ module.exports.deleteRequest = function (id, callback) {
   var query = "DELETE FROM resourcerequests WHERE request_id=" + id;
   con.query(query, callback);
 };
+
+
+// resource function
+
+module.exports.getResources = function (callback) {
+  var query = "select *from resource order by resource_id desc";
+  console.log(query);
+  con.query(query, callback);
+};
+
+module.exports.editmed = function (
+  resource_id,
+  quantity,
+  callback
+) {
+  var query =
+    "update resource set quantity='" +
+    quantity +
+    "' where resource_id=" +
+    resource_id;
+  console.log(query);
+  con.query(query, callback);
+};
+
+module.exports.updateResources = function (
+  resource_id,
+  price,
+  quantity,
+  p_date,
+  callback
+) {
+  var query =
+    "update resource set price='" +
+    price +
+    "',quantity='" +
+    quantity +
+    "',p_date='" +
+    p_date +
+    "' where resource_id=" +
+    resource_id;
+  console.log(query);
+  con.query(query, callback);
+};
+
+module.exports.getResource = function (resource_id, callback) {
+  var query = "select * from resource where resource_id=" + resource_id;
+  con.query(query, callback);
+};
+
+module.exports.addResources = function (
+  resource_id,
+  name, 
+  p_date,
+  price,
+  quantity,
+  callback
+) {
+  var query =
+    "Insert into resource (resource_id, resource_name,p_date,price,quantity) values('" +
+    resource_id +
+     "','" +
+    name +
+    "','" +
+    p_date +
+    "','" +
+    price +
+    "','" +
+    quantity +
+    "')";
+  console.log(query);
+  con.query(query, callback);
+};
+
+module.exports.countEntries = function (callback) {
+  var query = "SELECT COUNT(*) AS count FROM resource";
+  
+  con.query(query, function (err, results) {
+    if (err) {
+        return callback(err, null);
+    }
+    return callback(results[0].count, null);
+})
+};
+module.exports.deleteResourceColumn = function(resource_id,callback) {
+  console.log("i m here");
+  var query = "DELETE FROM resource WHERE resource_id ="+resource_id;
+
+  con.query(query,callback);
+  console.log(query);
+}
