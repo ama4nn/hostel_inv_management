@@ -4,44 +4,48 @@ var db = require.main.require ('./models/db_controller');
 var bodyPaser = require ('body-parser');
 
 router.get('*', function(req, res, next){
-	if(req.cookies['username'] == null){
+	if (req.cookies['username'] == null) {
 		res.redirect('/login');
-	}else{
+	} else {
 		next();
 	}
 });
 
-router.get('/',function(req,res){
-    db.getAllRequests(function(err,result){
+router.get('/', (req, res) => {
+    db.getAllRequests( (err, result) => {
         res.render('appointment.ejs',{list :result});
     })
     
 });
 
-router.get('/addRequest',function(req,res){
+router.get('/addRequest', (req,res) => {
     res.render('addRequest.ejs');
 });
 
-router.post('/addRequest',function(req,res){
-    db.addRequest(req.body.room_no,req.body.resource_id,req.body.student_id,req.body.request_date,req.body.quantity,function(err,result){
+router.post('/addRequest', (req,res) => {
+    db.addRequest(
+        req.body.room_no, req.body.resource_id, req.body.student_id,
+        req.body.request_date,req.body.quantity, (err,result) => {
         res.redirect('/appointment');
     });
-
 });
 
 
-router.get('/edit_appointment/:id',function(req,res){
+router.get('/edit_appointment/:id', (req,res) => {
     var id = req.params.id;
-    db.getRequestById(id,function(err,result){
+
+    db.getRequestById(id, (err,result) => {
         console.log(result);
         res.render('edit_appointment.ejs',{list : result});
     });
-
 });
 
-router.post('/edit_appointment/:id',function(req,res){
+router.post('/edit_appointment/:id', (req, res) => {
     var id = req.params.id;
-    db.editappointment(id,req.body.p_name,req.body.department,req.body.d_name,req.body.date,req.body.time,req.body.email,req.body.phone,function(err,result){
+
+    db.editappointment(
+        id,req.body.p_name,req.body.department,req.body.d_name,req.body.date,
+        req.body.time,req.body.email,req.body.phone, (err,result) => {
         res.redirect('/appointment');
     });
 });
@@ -49,22 +53,23 @@ router.post('/edit_appointment/:id',function(req,res){
 
 router.get('/deleteRequest/:id',function(req,res){
     var id = req.params.id;
+
     db.getRequestById(id,function(err,result){
         console.log(result);
-        res.render('deleteRequest.ejs',{list:result});
-    })
+        res.render('deleteRequest.ejs', {list: result});
+    });
     
 });
 
-router.get('/approveRequest/:id', function (req, res) {
+router.get('/approveRequest/:id', (req, res) => {
     const requestId = req.params.id;
 
-    db.validateAndApproveRequest(requestId, function (err, result) {
+    db.validateAndApproveRequest(requestId, (err, result) => {
         if (err) {
             console.error("Error approving request:", err.message);
 
             // Fetch the appointments list to display on the UI
-            db.getAllRequests(function (appointmentsErr, appointments) {
+            db.getAllRequests((appointmentsErr, appointments) => {
                 if (appointmentsErr) {
                     console.error("Error fetching appointments:", appointmentsErr);
                     return res.status(500).send("Error fetching appointments");
@@ -85,19 +90,19 @@ router.get('/approveRequest/:id', function (req, res) {
     });
 });
 
-
-router.get('/rejectRequest/:id', function(req, res) {
+router.get('/rejectRequest/:id', (req, res) => {
     var id = req.params.id;
-    db.rejectRequest(id, function(err, result) {
+
+    db.rejectRequest(id, (err, result) => {
         res.redirect('/appointment');
     });
 });
 
-router.post('/deleteRequest/:id',function(req,res){
+router.post('/deleteRequest/:id', (req,res) => {
     var id = req.params.id;
-    db.deleteRequest(id,function(err,result){
+    db.deleteRequest(id, (err, result) => {
         res.redirect('/appointment');
     });
-})
+});
 
 module.exports = router;

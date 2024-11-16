@@ -42,6 +42,14 @@ module.exports.verify = (username, email, token, callback) => {
   con.query(query, callback);
 };
 
+
+/*  ---- Request Table Functions ----  */
+
+module.exports.getAllRequests = (callback) => {
+  var query = "SELECT * FROM resourcerequests";
+  con.query(query, callback);
+};
+
 module.exports.addRequest = (room_no, resource_id, student_id, request_date, quantity, 
   callback = (error, results) => {
     if (error) {
@@ -51,12 +59,7 @@ module.exports.addRequest = (room_no, resource_id, student_id, request_date, qua
     }
   }) => {
   var status = "Pending";
-  console.log("room_no:", room_no);
-  console.log("resource_id:", resource_id);
-  console.log("student_id:", student_id);
-  console.log("request_date:", request_date);
-  console.log("quantity:", quantity);
-  console.log("status:", status);
+
   if (
     room_no == "" ||
     resource_id == null ||
@@ -67,77 +70,38 @@ module.exports.addRequest = (room_no, resource_id, student_id, request_date, qua
     status == null
   ) {
     console.error("One or more parameters are undefined or null");
-    return callback(new Error("Invalid parameters"));
+    return callback(new Error("Invalid parameters"));   // Terminates function and returns error before query execution
   }
 
   const query1 = `
     INSERT INTO resourcerequests (room_no, resource_id, student_id, quantity, status, request_date)
-    VALUES ('` + room_no + `', ` + resource_id + `, '`+student_id+`', `+quantity+`, '`+status+`', '`+request_date+`');
+    VALUES ('${room_no}', ${resource_id}, '${student_id}', ${quantity}, '${status}', '${request_date}');
   `;
 
 
-  con.query(query1, function (err, result) {
+  con.query(query1, function (err, result) { // add request to resourcerequest
     if (err) {
       return callback(err);
     }
-    const reqId = result.insertId;
+
+    const reqId = result.insertId;  // To add log req addition to maintenance log
     console.log("Inserted ID: ", reqId);
 
     const query2 =  `
       INSERT INTO maintenancelog (date_completed, request_id, student_id, action_type)
-      VALUES ('`+request_date+`', `+reqId+`, '`+student_id+`', "Added Pending");
+      VALUES ('${request_date}', ${reqId}, '${student_id}', "Added Pending");
     `
 
-    con.query(query2, callback);
+    con.query(query2, callback); 
   });
 };
 
-
-module.exports.getAllRequests = (callback) => {
-  var query = "SELECT * FROM resourcerequests";
-  con.query(query, callback);
-};
 
 module.exports.getAllLogs = (callback) => {
   var query = "SELECT * FROM maintenancelog";
   con.query(query, callback);
 }
 
-module.exports.editResources = function (resource_id, requestId, callback) {
-  const query = `
-      UPDATE Resource r
-      JOIN ResourceRequests rr ON r.resource_id = rr.resource_id
-      SET r.quantity = r.quantity - rr.quantity
-      WHERE r.resource_id = ? AND rr.request_id = ?
-  `;
-
-  console.log("Executing query:", query);
-  con.query(query, [resource_id, requestId], function (err, result) {
-      if (err) {
-          console.error("Error updating resource quantity:", err);
-          return callback(err);
-      }
-      console.log("Resource quantity updated successfully");
-      callback(null, result);
-  });
-};
-
-
-module.exports.getResource_idAndQuantity = function (requestId, callback) {
-  const query = "SELECT resource_id, quantity FROM ResourceRequests WHERE request_id = ?";
-  con.query(query, [requestId], function (err, results) {
-      if (err) return callback(err);
-      callback(null, results[0]); // Return first result if found
-  });
-};
-
-module.exports.getResourceQuantity = function (resource_id, callback) {
-  const query = "SELECT quantity FROM Resource WHERE resource_id = ?";
-  con.query(query, [resource_id], function (err, results) {
-      if (err) return callback(err);
-      callback(null, results[0]?.quantity); // Return the quantity if it exists
-  });
-};
 
 module.exports.getPendingRequests = function(callback) {
   var query = "SELECT * FROM resourcerequests WHERE status = 'Pending'";
@@ -150,20 +114,19 @@ module.exports.getRequestById = function (id, callback) {
   con.query(query, callback);
 };
 
-
 module.exports.validateAndApproveRequest = function (requestId, callback) {
   // Query to get resource_id, requested quantity, and current resource quantity
   const query = `
       SELECT rr.resource_id, rr.quantity AS request_quantity, r.quantity AS resource_quantity 
       FROM ResourceRequests rr
       JOIN Resource r ON rr.resource_id = r.resource_id
-      WHERE rr.request_id = ?
+      WHERE rr.request_id = ${requestId}
   `;
-  con.query(query, [requestId], function (err, results) {
+  con.query(query, function (err, results) {
       if (err) {
-        console.error("Error approving request:", err.message);
-        // Render the appointment page with an error message
-        return res.render('appointment', {
+        console.error("Error approving request:", err.message); 
+
+        return res.render('appointment', { // ???
             error: err.message,
             list: req.session.appointments || [], // Pass current appointment list to the template
         });
@@ -182,16 +145,16 @@ module.exports.validateAndApproveRequest = function (requestId, callback) {
       const updateQuery = `
           UPDATE ResourceRequests rr
           JOIN Resource r ON rr.resource_id = r.resource_id
-          SET rr.status = 'Approved', r.quantity = r.quantity - ?
-          WHERE rr.request_id = ? AND rr.resource_id = ?
+          SET rr.status = 'Approved', r.quantity = r.quantity - ${request_quantity}
+          WHERE rr.request_id = ${requestId} AND rr.resource_id = ${resource_id}
       `;
-      con.query(updateQuery, [request_quantity, requestId, resource_id], function(err, result) {
+      con.query(updateQuery, function(err, result) {
         if (err) {
           return callback(err);
         }
 
-        const getReqQuery = `SELECT request_date, student_id FROM resourcerequests WHERE request_id = ` + requestId;
-        con.query(getReqQuery, function(err, result1) {
+        const getReqQuery = `SELECT request_date, student_id FROM resourcerequests WHERE request_id = ` + requestId; 
+        con.query(getReqQuery, function(err, result1) { // Retrieves request date and student ID for corresponding requestId
           if (err) {
             return callback(err);
           }
@@ -201,11 +164,11 @@ module.exports.validateAndApproveRequest = function (requestId, callback) {
           const localDate = new Date(request_date);
           const formattedDate = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
           
-          const logApprovalQuery = `
+          const logApprovalQuery = ` 
                   INSERT INTO maintenancelog (date_completed, request_id, student_id, action_type)
-                  VALUES ('`+formattedDate+`', `+requestId+`, '`+student_id+`', "Accepted Request");
+                  VALUES ('${formattedDate}', ${requestId}, '${student_id}', "Accepted Request");
           `;
-          con.query(logApprovalQuery, callback);
+          con.query(logApprovalQuery, callback); // Adds Approved request into log
         })
       });
   });
@@ -214,12 +177,12 @@ module.exports.validateAndApproveRequest = function (requestId, callback) {
 
 module.exports.rejectRequest = function (id, callback) {
   var query = "UPDATE resourcerequests SET status = 'Rejected' WHERE request_id = " + id;
-  con.query(query, function(err, result) {
+  con.query(query, function(err, result) { // Updates status in resourcerequests
     if (err) {
       return callback(err);
     }
     var selectQuery = `SELECT request_date, student_id FROM resourcerequests WHERE request_id = ` + id;
-    con.query(selectQuery, function(err, result) {
+    con.query(selectQuery, function(err, result) { // Retrieves corresponding request_date and student_id for given request_id
       if (err) {
         return callback(err);
       }
@@ -231,9 +194,9 @@ module.exports.rejectRequest = function (id, callback) {
       
       const logRejectionQuery = `
         INSERT INTO maintenancelog (date_completed, request_id, student_id, action_type)
-        VALUES ('`+formattedDate+`', `+id+`, '`+student_id+`', "Rejected Request");
+        VALUES ('${formattedDate}', ${id}, '${student_id}', "Rejected Request");
       `;
-      con.query(logRejectionQuery, callback);
+      con.query(logRejectionQuery, callback); // Adds rejection of request to maintenance log
     })
   });
 };
@@ -244,7 +207,7 @@ module.exports.deleteRequest = function (id, callback) {
 };
 
 
-// resource function
+/* ---- Resource Table Functions ---- */
 
 module.exports.getResources = function (callback) {
   var query = "select *from resource order by resource_id desc";
