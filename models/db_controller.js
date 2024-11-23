@@ -210,11 +210,16 @@ module.exports.deleteRequest = function (id, callback) {
 
 /* ---- Resource Table Functions ---- */
 
-module.exports.getResources = function (callback) {
-  var query = "select *from resource order by resource_id desc";
-  console.log(query);
-  con.query(query, callback);
+module.exports.getResources = (callback) => {
+  const query = 'SELECT * FROM resource order by resource_id desc';
+  con.query(query, (err, results) => {
+      if (err) {
+          return callback(err, null);
+      }
+      callback(null, results); // Return the results to the callback
+  });
 };
+
 
 module.exports.editmed = function (
   resource_id,
@@ -296,3 +301,19 @@ module.exports.deleteResourceColumn = function(resource_id,callback) {
   con.query(query,callback);
   console.log(query);
 }
+
+function isStudent(req, res, next) {
+  if (req.user && req.user.role === 'student') {
+      return next();
+  }
+  res.status(403).send('Access denied: Students only');
+}
+
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+      return next();
+  }
+  res.redirect('/');
+}
+
+module.exports.con = con; // Expose raw connection

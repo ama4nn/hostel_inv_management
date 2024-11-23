@@ -1,63 +1,174 @@
-var express = require ('express');
-var session = require ('express-session');
-var cookie = require ('cookie-parser');
-var path = require ('path');
-var ejs= require ('ejs');
-var path = require ('path');
-var app = express();
+require('dotenv').config(); // Load environment variables
+const express = require('express');
+const session = require('express-session');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const path = require('path');
+const { con } = require('./models/db_controller'); // Import database connection
 
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-
-var bodyParser = require ('body-parser')
-
-var  login = require ('./controllers/login');
-var  home = require ('./controllers/home');
-var  signup = require ('./controllers/signup');
-var  doc_controller = require ('./controllers/doc_controller');
-var reset = require('./controllers/reset_controller');
-var set = require('./controllers/set_controller');
-var employee = require ('./controllers/employee.js');
-var logout = require ('./controllers/logout');
-var verify = require ('./controllers/verify');
-var store = require ('./controllers/store');
-var landing = require ('./controllers/landing');
-var complain = require ('./controllers/complain');
-var appointment = require ('./controllers/appointment');
-var logs = require('./controllers/logs')
-
-var receipt = require ('./controllers/receipt');
-
-var app = express();
-var port = 3000;
-
+// Middleware
 app.set('view engine', 'ejs');
-
 app.use(express.static('./public'));
-app.use(bodyParser.urlencoded({extended : true}));
-app.use(bodyParser.json());
-app.use(cookie());
-//app.use(expressValidator());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || 'defaultSecretKey',
+        resave: false,
+        saveUninitialized: false,
+    })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
+// --- Google OAuth Configuration ---
+passport.use(
+    new GoogleStrategy(
+        {
+            clientID: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback1',
+        },
+        (accessToken, refreshToken, profile, done) => {
+            const googleId = profile.id;
+            const email = profile.emails[0].value;
 
-var server = app.listen(port ,() => {
+            // Assign role based on email domain
+            const role = email.endsWith('@iiitdmj.ac.in') ? 'student' : 'admin';
 
-    console.log("Server started on port `localhost:" + port + "`");
+            // Check if user exists in the database
+            con.query('SELECT * FROM user WHERE google_id = ?', [googleId], (err, results) => {
+                if (err) {
+                    console.error('Database error:', err);
+                    return done(err);
+                }
+
+                if (results.length > 0) {
+                    const user = results[0];
+
+                    // Update role if necessary
+                    if (user.role !== role) {
+                        con.query('UPDATE user SET role = ? WHERE id = ?', [role, user.id], (updateErr) => {
+                            if (updateErr) console.error('Error updating role:', updateErr);
+                        });
+                    }
+
+                    return done(null, user);
+                }
+
+                // Insert new user if not found
+                const newUser = {
+                    google_id: googleId,
+                    email,
+                    username: profile.displayName,
+                    role,
+                };
+
+                con.query('INSERT INTO user SET ?', newUser, (insertErr, result) => {
+                    if (insertErr) {
+                        console.error('Error inserting new user:', insertErr);
+                        return done(insertErr);
+                    }
+                    newUser.id = result.insertId;
+                    return done(null, newUser);
+                });
+            });
+        }
+    )
+);
+
+passport.serializeUser((user, done) => {
+    done(null, { id: user.id, role: user.role });
 });
 
-app.use('/login' ,login);
-app.use('/home' , home);
-app.use('/signup' , signup);
-app.use('/doctors', doc_controller);
-app.use('/resetpassword' ,reset);
-app.use('/setpassword',set);
-app.use('/employee',employee);
-app.use ('/logout',logout);
-app.use ('/verify', verify);
-app.use ('/store',store);
-app.use ('/',landing);
-app.use ('/complain',complain);
-app.use ('/appointment',appointment);
-app.use('/receipt',receipt);
-app.use('/logs', logs);
+passport.deserializeUser((user, done) => {
+    con.query('SELECT * FROM user WHERE id = ?', [user.id], (err, results) => {
+        if (err) {
+            console.error('Error during deserialization:', err);
+            return done(err);
+        }
 
-// app.use('/doctors/add_doctor',add_doc);
+        if (results.length === 0) {
+            console.error('User not found during deserialization');
+            return done(null, false);
+        }
+
+        done(null, results[0]);
+    });
+});
+
+// --- Routes ---
+app.get('/', (req, res) => {
+    res.redirect('/auth/google'); // Default to Google login page
+});
+
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get(
+    '/auth/google/callback1',
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+        // Redirect based on role
+        if (req.user.role === 'student') {
+            res.redirect('/logs');
+        } else {
+            res.redirect('/home');
+        }
+    }
+);
+
+app.get('/logout', (req, res) => {
+    req.logout((err) => {
+        if (err) {
+            console.error('Error during logout:', err);
+            return res.redirect('/');
+        }
+        res.redirect('/');
+    });
+});
+
+// --- Protected Routes ---
+function isAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/');
+}
+
+function isStudent(req, res, next) {
+    if (req.user && req.user.role === 'student') {
+        return next();
+    }
+    res.status(403).send('Access denied: Students only');
+}
+
+function isAdmin(req, res, next) {
+    if (req.user && req.user.role === 'admin') {
+        return next();
+    }
+    res.status(403).send('Access denied: Admins only');
+}
+
+// Routes for student and admin
+app.get('/home', isAuthenticated, isAdmin, (req, res) => {
+    res.render('home', { user: req.user });
+});
+
+// app.get('/logs', isAuthenticated, isStudent, (req, res) => {
+//     res.render('logs', { user: req.user });
+// });
+
+// Import other controllers
+app.use('/appointment', require('./controllers/appointment'));
+app.use('/login', require('./controllers/login'));
+app.use('/logout', require('./controllers/logout'));
+app.use('/logs', require('./controllers/logs'));
+app.use('/store', require('./controllers/store'));
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});

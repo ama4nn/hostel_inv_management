@@ -3,29 +3,14 @@ var router = express.Router();
 var db = require.main.require ('./models/db_controller');
 var bodyPaser = require ('body-parser');
 
-
-router.get('*', function(req, res, next){
-	if(req.cookies['username'] == null){
-		res.redirect('/login');
-	}else{
-		next();
-	}
-});
-
-
-
-
-
-
 router.get('/',function(req,res){
 
     db.getPendingRequests(function (err, result2) {
-        var pendingRequests = result2.length;
-        res.render('home.ejs', {pending : pendingRequests});
+        var pendingRequests = result2.length || null;
+        res.render('home', {pending : pendingRequests});
     })
    
 });
-
 
 router.get('/departments',function(req,res){
 

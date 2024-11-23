@@ -5,7 +5,7 @@ var session = require('express-session');
 var router = express.Router();
 var bodyParser = require('body-parser');
 var db = require.main.require('./models/db_controller');
-var sweetalert = require('sweetalert2');
+var  sweetalert = require('sweetalert2');
 const { check, validationResult } = require('express-validator');
 
 router.get('/', function (req, res) {
@@ -17,7 +17,7 @@ var con = mysql.createConnection({
     user: 'root',
     password: '',
     database: 'nodelogin',
-    port:3306
+    port:3307
 });
 
 router.use(

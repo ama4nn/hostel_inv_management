@@ -7,11 +7,7 @@ var router = express.Router();
 
 // Middleware to check if the user is logged in
 router.get('*', function(req, res, next){
-    if (req.cookies['username'] == null) {
-        res.redirect('/login');
-    } else {
         next();
-    }
 });
 
 // Route to display the list of resources
@@ -21,6 +17,7 @@ router.get('/', function(req, res) {
             console.error('Error fetching resources:', err);
             return res.status(500).send('Internal Server Error');
         }
+        console.log('Fetched resources:', result); // Debugging output
         res.render('store.ejs', { list: result });
     });
 });
